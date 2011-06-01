@@ -12,51 +12,80 @@ module Dotanuki
   # class for the result of an execution of one or more commands
   class ExecResult
     attr_reader :stdout, :stderr, :status, :failed_index
-    def initialize(out, err, status, failed_index=nil)
-      @stdout = out
-      @stderr = err
-      @status = status
-      @failed_index = failed_index
+    def initialize
+      @stdout = []
+      @stderr = []
+      @status = 0
+      @failed_index = nil
     end
 
+    # Returns true if the command has failed
     def failed?
       status != 0
     end
 
+    # Returns stderr for the command that failed
     def fail_message
       stderr[@failed_index]
     end
+
+    def add(stdout, stderr, status)
+      @stdout << stdout
+      @stderr << stderr
+      @status = status
+      if status.nil? || status != 0
+        @failed_index = @stdout.size - 1
+      end
+    end
+
+    def <<(result)
+      raise ArgumentError unless result.is_a?(ExecResult)
+      add(result.stdout, result.stderr, result.status)
+    end
+  end
+
+  # Execute commands in a block and return an array of ExecResult
+  #
+  # @example
+  #   guard do
+  #     execute "uname -a"
+  #     execute "ls /does/not/exist"
+  #   end
+  #
+  # TODO this is not thread safe
+  def guard(options={}, &block)
+    @guard = ExecResult.new
+    yield
+    clear_guard
+  rescue ExecError => e
+    puts "guard on duty"
+    clear_guard
   end
 
   # commands can be a string or an array of strings
   def execute(commands, options={})
     validate_options(options)
 
-    stdout = []
-    stderr = []
-    exit_status = 0
-    failed = nil
-    index = 0
+    result = ExecResult.new
 
     [commands].flatten.each do |command|
-      out, err, ex = _execute(command, options)
-      stdout << out
-      stderr << err
-      exit_status = ex
-      if options[:on_error] == :exception
+      stdout, stderr, exit_status = _execute(command, options)
+      result.add(stdout, stderr, exit_status)
+      if options[:on_error] == :exception || @guard
         if exit_status.nil?
+          @guard << result if @guard
           raise ExecError, "#{command}: command not found"
         elsif exit_status != 0
-          raise ExecError, stderr[index]
+          @guard << result if @guard
+          raise ExecError, stderr
         end
       elsif exit_status.nil? || exit_status != 0
-        failed = index
         break
       end
-      index += 1
     end
+    @guard << result if @guard
 
-    return ExecResult.new(stdout, stderr, exit_status, failed)
+    return result
   end
 
   def _execute(command, options={})
@@ -74,9 +103,17 @@ module Dotanuki
   def validate_options(options)
     options.each do |option, value|
       if option == :on_error && value != :exception
-        raise ArgumentError, "illegal value for option #{option}: #{value}" 
+        raise ArgumentError, "illegal value for option #{option}: #{value}"
       end
       raise ArgumentError, "illegal option: #{option}" if option != :on_error
     end
+  end
+
+  private
+
+  def clear_guard
+    result = @guard
+    @guard = nil
+    result
   end
 end

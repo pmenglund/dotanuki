@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "popen4"
 
-  #s.add_test_dependency "rspec"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "metric_fu"
 
 end

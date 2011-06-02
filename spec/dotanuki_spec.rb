@@ -25,6 +25,12 @@ describe Dotanuki do
         execute("uname -n")
       end.failed_index.should == 1
     end
+
+    it "should raise an exception on error" do
+      lambda { guard(:on_error => :exception) do
+        execute("ls /asd")
+      end }.should raise_error
+    end
   end
 
   describe "execute" do

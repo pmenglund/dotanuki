@@ -40,6 +40,7 @@ module Dotanuki
 
     def <<(result)
       raise ArgumentError unless result.is_a?(ExecResult)
+      # TODO merge correctly
       add(result.stdout, result.stderr, result.status)
     end
   end
@@ -54,12 +55,14 @@ module Dotanuki
   #
   # TODO this is not thread safe
   def guard(options={}, &block)
+    validate_options(options)
     @guard = ExecResult.new
     yield
     clear_guard
   rescue ExecError => e
-    puts "guard on duty"
-    clear_guard
+    result = clear_guard
+    raise e if options[:on_error] == :exception
+    result
   end
 
   # commands can be a string or an array of strings

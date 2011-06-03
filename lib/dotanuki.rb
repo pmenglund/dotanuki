@@ -45,6 +45,12 @@ module Dotanuki
     end
   end
 
+  def initialize(options={})
+    @defaults = {}
+    @defaults[:on_error] = :exception
+    @defaults.merge!(options)
+  end
+
   # Execute commands in a block and return an array of ExecResult
   #
   # @example
@@ -55,13 +61,14 @@ module Dotanuki
   #
   # TODO this is not thread safe
   def guard(options={}, &block)
-    validate_options(options)
+    opts = @defaults.merge(options)
+    validate_options(opts)
     @guard = ExecResult.new
     yield
     clear_guard
   rescue ExecError => e
     result = clear_guard
-    raise e if options[:on_error] == :exception
+    raise e if opts[:on_error] == :exception
     result
   end
 
@@ -105,7 +112,7 @@ module Dotanuki
 
   def validate_options(options)
     options.each do |option, value|
-      if option == :on_error && value != :exception
+      if option == :on_error && ! [:exception, :silent].include?(value)
         raise ArgumentError, "illegal value for option #{option}: #{value}"
       end
       raise ArgumentError, "illegal option: #{option}" if option != :on_error

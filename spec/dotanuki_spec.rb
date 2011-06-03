@@ -19,17 +19,23 @@ describe Dotanuki do
     end
 
     it "should stop when one item fails" do
-      guard do
+      guard(:on_error => :silent) do
         execute("id")
         execute("ls /asd")
         execute("uname -n")
       end.failed_index.should == 1
     end
 
-    it "should raise an exception on error" do
-      lambda { guard(:on_error => :exception) do
+    it "should raise an exception by default on error" do
+      lambda { guard do
         execute("ls /asd")
       end }.should raise_error
+    end
+
+    it "should not raise an exception by default on error" do
+      lambda { guard(:on_error => :silent) do
+        execute("ls /asd")
+      end }.should_not raise_error
     end
   end
 

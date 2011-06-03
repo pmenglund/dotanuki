@@ -1,3 +1,4 @@
 module Dotanuki
-  VERSION = "0.0.3"
+  # gem version
+  VERSION = "0.0.4"
 end

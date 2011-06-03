@@ -6,17 +6,17 @@ failed commands.
 
 Examples
 ========
-In the following example, if the mkdir fails, none of the other commands will
+In the following example, if the `mkdir` fails, none of the other commands will
 be executed.
 
-	class Foo
-		include 'dotanuki'
+	class Example
+		include Dotanuki
 
 		def test
 			commands = [
 				"mkdir /tmp/foo",
-				"cd /tmp/foo",
-				"cp /etc/hosts ."
+				"cp /etc/hosts /tmp/foo",
+				"cp /etc/passwd /tmp/foo"
 			]
 
 			result = execute(commands)
@@ -25,3 +25,16 @@ be executed.
 			end
 		end
 	end
+
+It can also be used with a `guard` block, which will raise an `ExecError` if a command fails.
+
+    class Example
+		include Dotanuki
+		def test
+			guard do
+				execute "mkdir /tmp/foo"
+				execute "cp /etc/hosts /tmp/foo"
+				execute "cp /etc/passwd /tmp/foo"
+			end
+		end
+    end

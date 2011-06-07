@@ -110,10 +110,6 @@ describe Dotanuki do
       r.stderr.should == [""]
     end
 
-    it "should execute a single command" do
-      _execute("echo 'foo'").should == ["foo", "", 0]
-    end
-
     describe "with exception option should throw an exception" do
       it "on missing command" do
         lambda { execute(COMMAND_NOT_FOUND, {:on_error => :exception}) }.should raise_error Dotanuki::ExecError, "#{NON_EXISTING_PATH}: command not found"

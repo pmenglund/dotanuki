@@ -1,4 +1,4 @@
-require 'popen4'
+require 'posix/spawn'
 
 # Module intented to be included into classes which execute system commands
 # @author Martin Englund
@@ -90,6 +90,7 @@ module Dotanuki
   #     execute "ls /does/not/exist"
   #   end
   # @note this method isn't thread safe
+  # @todo pass an environment too
   def guard(options={}, &block)
     opts = @defaults.merge(options)
     validate_options(opts)
@@ -108,46 +109,39 @@ module Dotanuki
   # @param [String, Array] commands string or array containing the command to be executed
   # @param [Hash] options (see #guard)
   # @return [ExecResult]
+  # @todo pass an environment too
   def execute(commands, options={})
     validate_options(options)
 
     result = ExecResult.new
 
     [commands].flatten.each do |command|
-      stdout, stderr, exit_status = _execute(command)
-      result.add(stdout, stderr, exit_status)
-      if options[:on_error] == :exception || @guard
-        if exit_status.nil?
+      begin
+        child = POSIX::Spawn::Child.new(command)
+        stdout = child.out.strip
+        stderr = child.err.strip
+        result.add(stdout, stderr, child.status.exitstatus)
+
+        if child.status.exitstatus != 0
+          if options[:on_error] == :exception || @guard
+            @guard << result if @guard
+            raise ExecError, stderr
+          end
+          break
+        end
+      rescue Errno::ENOENT
+        result.add(nil, nil, nil)
+        if options[:on_error] == :exception
           @guard << result if @guard
           raise ExecError, "#{command}: command not found"
-        elsif exit_status != 0
-          @guard << result if @guard
-          raise ExecError, stderr
         end
-      elsif exit_status.nil? || exit_status != 0
         break
       end
     end
+
     @guard << result if @guard
 
     return result
-  end
-
-  # Execute a single command
-  #
-  # @param [String] command string containing the command to be executed
-  # @return [String, String, Fixnum] standard out, standard error and exit
-  #   status of the command
-  def _execute(command)
-    stdout = stderr = ""
-
-    status =
-      POpen4::popen4(command) do |out, err, stdin, pid|
-        stdout = out.read.chomp
-        stderr = err.read.chomp
-      end
-
-    return stdout, stderr, status ? status.exitstatus : status
   end
 
   # Validates options for Dotanuki#execute or Dotanuki#guard

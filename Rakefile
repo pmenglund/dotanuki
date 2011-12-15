@@ -4,9 +4,8 @@ require 'metric_fu'
 
 Bundler::GemHelper.install_tasks
 
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = "--color"
-end
+task :default => [:spec]
+RSpec::Core::RakeTask.new(:spec)
 
 desc "run autotest"
 task :autotest do

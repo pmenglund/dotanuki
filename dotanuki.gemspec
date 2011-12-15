@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency "posix-spawn"
 
   s.add_development_dependency "rspec"
+  s.add_development_dependency "guard-rspec"
   s.add_development_dependency "metric_fu"
 
 end

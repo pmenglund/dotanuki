@@ -87,7 +87,7 @@ describe Dotanuki do
 
       it "should capture stderr" do
         r = execute(COMMAND_FAILED)
-        r.stderr[0].should == "ls: #{NON_EXISTING_PATH}: No such file or directory"
+        r.stderr[0].should match /ls: .*#{NON_EXISTING_PATH}: No such file or directory/
       end
 
     end
@@ -112,11 +112,11 @@ describe Dotanuki do
 
     describe "with exception option should throw an exception" do
       it "on missing command" do
-        lambda { execute(COMMAND_NOT_FOUND, {:on_error => :exception}) }.should raise_error Dotanuki::ExecError, "#{NON_EXISTING_PATH}: command not found"
+        lambda { execute(COMMAND_NOT_FOUND, {:on_error => :exception}) }.should raise_error Dotanuki::ExecError
       end
 
       it "exception failing" do
-        lambda { execute(COMMAND_FAILED, {:on_error => :exception}) }.should raise_error Dotanuki::ExecError, "ls: #{NON_EXISTING_PATH}: No such file or directory"
+        lambda { execute(COMMAND_FAILED, {:on_error => :exception}) }.should raise_error Dotanuki::ExecError
       end
     end
 

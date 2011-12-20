@@ -4,7 +4,7 @@ Simple but effective executioner of commands, which will deal correctly with fai
 
 h1. Examples
 
-In the following example, if the `mkdir` fails, none of the other commands will be executed.
+In the following example, if the <code>mkdir</code> fails, none of the other commands will be executed.
 
 <pre>
 	class Example
@@ -25,11 +25,12 @@ In the following example, if the `mkdir` fails, none of the other commands will 
 	end
 </pre>
 
-It can also be used with a `guard` block, which will raise an `ExecError` if a command fails.
+It can also be used with a <code>guard</code> block, which will raise an <code>ExecError</code> if a command fails.
 
 <pre>
-    class Example
+	class Example
 		include Dotanuki
+
 		def test
 			guard do
 				execute "mkdir /tmp/foo"
@@ -37,5 +38,5 @@ It can also be used with a `guard` block, which will raise an `ExecError` if a c
 				execute "cp /etc/passwd /tmp/foo"
 			end
 		end
-    end
+	end
 </pre>

@@ -1,14 +1,12 @@
-Dotanuki
-========
+h1. Dotanuki "!https://secure.travis-ci.org/pmenglund/dotanuki.png?branch=master!":http://travis-ci.org/pmenglund/dotanuki
 
-Simple but effective executioner of commands, which will deal correctly with
-failed commands.
+Simple but effective executioner of commands, which will deal correctly with failed commands.
 
-Examples
-========
-In the following example, if the `mkdir` fails, none of the other commands will
-be executed.
+h1. Examples
 
+In the following example, if the `mkdir` fails, none of the other commands will be executed.
+
+<pre>
 	class Example
 		include Dotanuki
 
@@ -25,9 +23,11 @@ be executed.
 			end
 		end
 	end
+</pre>
 
 It can also be used with a `guard` block, which will raise an `ExecError` if a command fails.
 
+<pre>
     class Example
 		include Dotanuki
 		def test
@@ -38,3 +38,4 @@ It can also be used with a `guard` block, which will raise an `ExecError` if a c
 			end
 		end
     end
+</pre>

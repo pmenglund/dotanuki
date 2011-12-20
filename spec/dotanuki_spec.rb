@@ -21,20 +21,20 @@ describe Dotanuki do
     it "should stop when one item fails" do
       guard(:on_error => :silent) do
         execute("id")
-        execute("ls /asd")
+        execute(COMMAND_FAILED)
         execute("uname -n")
       end.failed_index.should == 1
     end
 
     it "should raise an exception by default on error" do
       lambda { guard do
-        execute("ls /asd")
+        execute(COMMAND_FAILED)
       end }.should raise_error
     end
 
-    it "should not raise an exception by default on error" do
+    it "should not raise an exception on error when silent" do
       lambda { guard(:on_error => :silent) do
-        execute("ls /asd")
+        execute(COMMAND_FAILED)
       end }.should_not raise_error
     end
   end
@@ -50,14 +50,6 @@ describe Dotanuki do
       it "should stop on last" do
         r = execute([EXISTING_COMMAND, COMMAND_NOT_FOUND])
         r.failed_index.should == 1
-      end
-
-      it "should return nil when not found" do
-        execute([EXISTING_COMMAND, COMMAND_NOT_FOUND]).status.should be_nil
-      end
-
-      it "should return nil when not found" do
-        execute([COMMAND_NOT_FOUND, EXISTING_COMMAND]).status.should be_nil
       end
     end
 
@@ -129,7 +121,7 @@ describe Dotanuki do
     end
 
     it "should supply correct info on a failing command" do
-      r = execute("ls /asd")
+      r = execute(COMMAND_FAILED)
       r.failed?.should be_true
       r.fail_message.should_not be_empty
     end

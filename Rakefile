@@ -1,6 +1,5 @@
 require 'bundler'
 require 'rspec/core/rake_task'
-require 'metric_fu'
 
 Bundler::GemHelper.install_tasks
 

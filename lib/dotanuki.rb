@@ -92,7 +92,8 @@ module Dotanuki
   # @note this method isn't thread safe
   # @todo pass an environment too
   def guard(options={}, &block)
-    opts = @defaults.merge(options)
+    # if guard is called as a module function @defaults is not set
+    opts = (@defaults || {}).merge(options)
     validate_options(opts)
     # TODO this is not thread safe
     @guard = ExecResult.new
@@ -156,12 +157,14 @@ module Dotanuki
     end
   end
 
-  private
-
   # TODO this is not thread safe
   def clear_guard
     result = @guard
     @guard = nil
     result
   end
+
+  # TODO don't expose validate_options & clear_guard
+  module_function :execute, :guard, :validate_options, :clear_guard
+
 end

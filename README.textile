@@ -1,15 +1,18 @@
 h1. Dotanuki "!https://secure.travis-ci.org/pmenglund/dotanuki.png?branch=master!":http://travis-ci.org/pmenglund/dotanuki
 
-Simple but effective executioner of commands, which will deal correctly with failed commands. There are two versions of the Dotanuki gem
-"dotanuki":rubygems.org/gems/dotanuki which uses "posix-spawn":rubygems.org/gems/posix-spawn and a pure ruby version "dotanuki-ruby":rubygems.org/gems/dotanuki-ruby
+Simple but effective executioner of commands, which will deal correctly with failed commands.
 
-Note that if the pure ruby version can load "posix-spawn":rubygems.org/gems/posix-spawn it will use it.
+There are two versions of the Dotanuki gem "dotanuki":http://rubygems.org/gems/dotanuki which uses "posix-spawn":http://rubygems.org/gems/posix-spawn and a pure ruby version "dotanuki-ruby":http://rubygems.org/gems/dotanuki-ruby which uses "open4":http://rubygems.org/gems/open4 instead.
+
+Note that if the pure ruby version can load "posix-spawn":http://rubygems.org/gems/posix-spawn it will use it.
 
 h1. Examples
 
 In the following example, if the <code>mkdir</code> fails, none of the other commands will be executed.
 
 <pre>
+  require "dotanuki"
+
   class Example
     include Dotanuki
 
@@ -31,6 +34,8 @@ In the following example, if the <code>mkdir</code> fails, none of the other com
 It can also be used with a <code>guard</code> block, which will raise an <code>ExecError</code> if a command fails.
 
 <pre>
+  require "dotanuki"
+
   class Example
     include Dotanuki
 
@@ -47,8 +52,9 @@ It can also be used with a <code>guard</code> block, which will raise an <code>E
 If you want to use dotanuki in a class method, you have to use the module method
 
 <pre>
-  class Example
+  require "dotanuki"
 
+  class Example
     def self.test?
       Dotanuki.execute("mkdir /tmp/foo").ok?
     end

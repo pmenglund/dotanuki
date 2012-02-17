@@ -1,42 +1,56 @@
 h1. Dotanuki "!https://secure.travis-ci.org/pmenglund/dotanuki.png?branch=master!":http://travis-ci.org/pmenglund/dotanuki
 
-Simple but effective executioner of commands, which will deal correctly with failed commands.
+Simple but effective executioner of commands, which will deal correctly with failed commands. There are two versions of the Dotanuki gem
+"dotanuki":rubygems.org/gems/dotanuki which uses "posix-spawn":rubygems.org/gems/posix-spawn and a pure ruby version "dotanuki-ruby":rubygems.org/gems/dotanuki-ruby
+
+Note that if the pure ruby version can load "posix-spawn":rubygems.org/gems/posix-spawn it will use it.
 
 h1. Examples
 
 In the following example, if the <code>mkdir</code> fails, none of the other commands will be executed.
 
 <pre>
-	class Example
-		include Dotanuki
+  class Example
+    include Dotanuki
 
-		def test
-			commands = [
-				"mkdir /tmp/foo",
-				"cp /etc/hosts /tmp/foo",
-				"cp /etc/passwd /tmp/foo"
-			]
+    def test
+      commands = [
+        "mkdir /tmp/foo",
+        "cp /etc/hosts /tmp/foo",
+        "cp /etc/passwd /tmp/foo"
+      ]
 
-			result = execute(commands)
-			if result.failed?
-				puts "execution failed: #{result.fail_message}"
-			end
-		end
-	end
+      result = execute(commands)
+      if result.failed?
+        puts "execution failed: #{result.fail_message}"
+      end
+    end
+  end
 </pre>
 
 It can also be used with a <code>guard</code> block, which will raise an <code>ExecError</code> if a command fails.
 
 <pre>
-	class Example
-		include Dotanuki
+  class Example
+    include Dotanuki
 
-		def test
-			guard do
-				execute "mkdir /tmp/foo"
-				execute "cp /etc/hosts /tmp/foo"
-				execute "cp /etc/passwd /tmp/foo"
-			end
-		end
-	end
+    def test
+      guard do
+        execute "mkdir /tmp/foo"
+        execute "cp /etc/hosts /tmp/foo"
+        execute "cp /etc/passwd /tmp/foo"
+      end
+    end
+  end
+</pre>
+
+If you want to use dotanuki in a class method, you have to use the module method
+
+<pre>
+  class Example
+
+    def self.test?
+      Dotanuki.execute("mkdir /tmp/foo").ok?
+    end
+  end
 </pre>

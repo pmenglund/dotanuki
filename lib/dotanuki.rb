@@ -1,8 +1,14 @@
-require 'posix/spawn'
-
 # Module intented to be included into classes which execute system commands
 # @author Martin Englund
 module Dotanuki
+
+  begin
+    require 'posix/spawn'
+    POSIX_SPAWN = true
+  rescue LoadError
+    require 'open4'
+    POSIX_SPAWN = false
+  end
 
   # Error raised when an execution error occurs
   class ExecError < StandardError
@@ -45,6 +51,11 @@ module Dotanuki
     # Returns true if a command has failed
     def failed?
       status != 0
+    end
+
+    # Returns true if a command has not failed
+    def ok?
+      status == 0
     end
 
     # Returns stderr for the command that failed
@@ -118,12 +129,20 @@ module Dotanuki
 
     [commands].flatten.each do |command|
       begin
-        child = POSIX::Spawn::Child.new(command)
-        stdout = child.out.strip
-        stderr = child.err.strip
-        result.add(stdout, stderr, child.status.exitstatus)
+        if POSIX_SPAWN
+          child = POSIX::Spawn::Child.new(command)
+          stdout = child.out.strip
+          stderr = child.err.strip
+          status = child.status
+        else
+          status = Open4::popen4(command) do |pid, stdin, out, err|
+            stdout = out.read.strip
+            stderr = err.read.strip
+          end
+        end
+        result.add(stdout, stderr, status.exitstatus)
 
-        if child.status.exitstatus != 0
+        if status.exitstatus != 0
           if options[:on_error] == :exception || @guard
             @guard << result if @guard
             raise ExecError, stderr

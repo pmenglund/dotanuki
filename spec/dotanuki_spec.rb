@@ -122,6 +122,7 @@ describe Dotanuki do
 
     it "should supply correct info on a failing command" do
       r = execute(COMMAND_FAILED)
+      r.ok?.should be_false
       r.failed?.should be_true
       r.fail_message.should_not be_empty
     end
